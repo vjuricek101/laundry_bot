@@ -1,0 +1,8 @@
+node_modules/
+x.js
+config.h
+.env
+dashboard/config.js
+laundry_log.csv
+__pycache__/
+.DS_Store

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaundryBot Live</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700&family=Work+Sans:wght@600&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+</head>
+
+<body>
+    <header class="live-header">
+        <div class="brand-lockup">
+            <div class="live-brand" aria-label="LaundryBot Home">
+                <span class="brand-text">Laundry<span class="brand-accent">Bot</span></span>
+            </div>
+            <div class="live-indicator" aria-label="Live site status">
+                <span class="live-dot" id="conn-dot" aria-hidden="true"></span>
+                <span id="conn-status">Connecting</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero-live">
+            <div class="hero-live-bg" aria-hidden="true"></div>
+            <div class="live-container hero-live-content">
+                <h2 class="eyebrow">Roble Hall</h2>
+                <h1>Live laundry tracking </h1>
+            </div>
+        </section>
+
+        <section class="live-section live-container">
+            <div class="machines-grid" id="machines-container">
+                <!-- Machine cards will be injected here by app.js -->
+                <div class="loader">Waiting for data...</div>
+            </div>
+        </section>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
