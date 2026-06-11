@@ -7,10 +7,10 @@ import os
 from dotenv import load_dotenv
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--synthetic", action="store_true", help="Use public HiveMQ for testing without VPN")
+parser.add_argument("--hivemq", action="store_true", help="Connect to public HiveMQ broker (broker.hivemq.com:1883) instead of local broker")
 args = parser.parse_args()
 
-if args.synthetic:
+if args.hivemq:
     BROKER = "broker.hivemq.com"
     PORT = 1883
     USERNAME = None
@@ -43,12 +43,19 @@ def on_message(client, userdata, msg):
         
         key = f"{building}/{machine_id}"
         if key not in machines:
-            machines[key] = {"state": "unknown", "last_seen": time.time()}
+            machines[key] = {"state": "unknown", "last_seen": time.time(), "running_since": None}
             
         machines[key]["last_seen"] = time.time()
         
         if event == "state":
-            machines[key]["state"] = data.get("state", "unknown")
+            new_state = data.get("state", "unknown")
+            old_state = machines[key].get("state", "unknown")
+            machines[key]["state"] = new_state
+            # Track when this machine first entered the 'running' state
+            if new_state == "running" and old_state != "running":
+                machines[key]["running_since"] = time.time()
+            elif new_state != "running":
+                machines[key]["running_since"] = None
             
         elif event == "cycle_end":
             duration = data.get("duration_min", 0)
@@ -71,13 +78,17 @@ def monitor_loop(client):
         for key, info in machines.items():
             building, machine_id = key.split('/')
             
-            # Dead node detection (>24h)
+            # Dead node detection (>24h without any message)
             if now - info["last_seen"] > 86400:
                 alert_payload = json.dumps({"alert_type": "offline", "machine_id": machine_id, "timestamp": now, "detail": "Node inactive for >24 hours"})
                 client.publish(f"laundry/{building}/{machine_id}/alert", alert_payload)
                 
-            # Stuck state detection (>3h running)
-            if info["state"] == "running" and (now - info["last_seen"] > 10800):
+            # Stuck-state detection: machine has been in 'running' for >3 hours.
+            # NOTE: We check running_since (set at state entry), NOT last_seen.
+            # last_seen is refreshed by every 5-second heartbeat, so
+            # `now - last_seen` can never exceed ~10s for an active node.
+            running_since = info.get("running_since")
+            if info["state"] == "running" and running_since and (now - running_since > 10800):
                 alert_payload = json.dumps({"alert_type": "stuck", "machine_id": machine_id, "timestamp": now, "detail": "Machine running for >3 hours"})
                 client.publish(f"laundry/{building}/{machine_id}/alert", alert_payload)
         

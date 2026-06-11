@@ -122,17 +122,11 @@ function onMessageArrived(message) {
                     machines[key].health_metrics = null;
                 }
                 
-                // Evaluate health
+                // All three metrics are always present in the payload.
+                // No client-side threshold warnings — raw data is displayed as-is;
+                // post-processing of the logged CSV handles anomaly analysis.
                 if (machines[key].state === "running" && machines[key].health_metrics) {
-                    if (machines[key].type === "washer" && machines[key].health_metrics.vibration < 30) {
-                        machines[key].error = "Warning: Broken Drum Detected";
-                    } else if (machines[key].type === "dryer" && machines[key].health_metrics.temperature < 35) {
-                        machines[key].error = "Warning: Heating Element Failure";
-                    } else {
-                        if (machines[key].error && machines[key].error.startsWith("Warning")) {
-                            machines[key].error = null;
-                        }
-                    }
+                    machines[key].error = null; // clear any prior alert-topic errors on new data
                 }
             } else if (topicParts[3] === "alert") {
                 machines[key].error = data.detail || "Error detected";
@@ -168,18 +162,16 @@ function renderMachines() {
         
         let healthUI = '';
         if (m.state === "running" && m.health_metrics) {
-            let metricText = '';
-            let isHealthy = !(m.error && m.error.startsWith("Warning"));
-            if (m.type === "washer" && m.health_metrics.vibration !== undefined) {
-                metricText = `Vib: ${m.health_metrics.vibration}Hz`;
-            } else if (m.type === "dryer" && m.health_metrics.temperature !== undefined) {
-                metricText = `Temp: ${m.health_metrics.temperature}°C`;
-            }
-            if (metricText) {
+            const hm = m.health_metrics;
+            const parts = [];
+            if (hm.temperature !== undefined) parts.push(`${hm.temperature.toFixed(1)}°C`);
+            if (hm.vibration  !== undefined) parts.push(`${hm.vibration.toFixed(1)}% vib`);
+            if (hm.rpm        !== undefined) parts.push(`${Math.round(hm.rpm)} RPM`);
+            if (parts.length > 0) {
                 healthUI = `
-                    <div class="health-indicator ${isHealthy ? 'optimal' : 'critical'}">
+                    <div class="health-indicator optimal">
                         <span class="health-dot"></span>
-                        ${metricText}
+                        ${parts.join(' &middot; ')}
                     </div>
                 `;
             }

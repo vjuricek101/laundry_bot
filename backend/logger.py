@@ -8,10 +8,10 @@ import argparse
 from dotenv import load_dotenv
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--synthetic", action="store_true", help="Use public HiveMQ for testing without VPN")
+parser.add_argument("--hivemq", action="store_true", help="Connect to public HiveMQ broker (broker.hivemq.com:1883) instead of local broker")
 args = parser.parse_args()
 
-if args.synthetic:
+if args.hivemq:
     BROKER = "broker.hivemq.com"
     PORT = 1883
     USERNAME = None
@@ -51,7 +51,19 @@ def on_message(client, userdata, msg):
             
             machine_type = data.get("machine_type", "")
             duration = data.get("duration_min", "")
+            
+            # Extract health metrics (like temperature, vibration, and RPM) to write to the detail column
             detail = data.get("detail", "")
+            if not detail and "health_metrics" in data:
+                metrics = data["health_metrics"]
+                parts = []
+                if "temperature" in metrics:
+                    parts.append(f"Temp: {metrics['temperature']:.1f}°C")
+                if "vibration" in metrics:
+                    parts.append(f"Vib: {metrics['vibration']:.2f}g")
+                if "rpm" in metrics:
+                    parts.append(f"RPM: {metrics['rpm']:.1f}")
+                detail = ", ".join(parts)
             
             # Log to CSV
             with open(CSV_FILE, mode='a', newline='') as file:

@@ -6,10 +6,10 @@ import os
 from dotenv import load_dotenv
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--synthetic", action="store_true", help="Use public HiveMQ for testing without VPN")
+parser.add_argument("--hivemq", action="store_true", help="Connect to public HiveMQ broker (broker.hivemq.com:1883) instead of local broker")
 args = parser.parse_args()
 
-if args.synthetic:
+if args.hivemq:
     BROKER = "broker.hivemq.com"
     PORT = 1883
     USERNAME = None

@@ -3,7 +3,7 @@ Non-invasive IoT system to track shared laundry machines. Uses an ESP32, acceler
 
 ## How It Works
 - **Vibration Sensing**: ADXL345 detects running states via EMA filtering.
-- **Dryer Detection**: TMP36 heat sensor identifies dryers.
+- **Dryer Detection**: TMP36 measures cabinet surface temperature as a heat indicator. Machine type (washer/dryer) is set via `MACHINE_TYPE` in `config.h`.
 - **Smart Logic**: ESP32 filters false starts and pauses.
 - **Anomaly Detection**: Flags short cycles (<3m), stuck machines (>3h), and nodes that appear to be offline.
 - **Communication**: Publishes JSON payloads via MQTT over Wi-Fi.
@@ -20,6 +20,5 @@ Non-invasive IoT system to track shared laundry machines. Uses an ESP32, acceler
 1. **Hardware**: Wire ADXL345 (I2C) and TMP36 (Analog) to ESP32.
 2. **Firmware**: Add Wi-Fi/MQTT details in `config.h` and flash.
 3. **Backend**: `pip install -r backend/requirements.txt` then run scripts.
+   - Use `--hivemq` flag on any backend script to connect to `broker.hivemq.com` instead of the local broker (useful when off-campus).
 4. **Dashboard**: Open `dashboard/index.html`.
------------
-5. **Testing (Synthetic - Frontend only)**: Run `python backend/simulator.py --synthetic` and ensure `USE_SYNTHETIC = true` in `dashboard/config.js`

@@ -14,5 +14,6 @@ const char *MQTT_PASSWORD = "laundry_password";
 // Node Configuration
 const char *BUILDING_ID = "roble";
 const char *MACHINE_ID = "synth_w01";
+const char *MACHINE_TYPE = "washer"; // "washer" or "dryer" — set per deployment
 
 #endif // CONFIG_H
