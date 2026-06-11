@@ -3,6 +3,7 @@
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
+extern bool wasDeepSleep;
 extern unsigned long cycleStartTime;
 extern unsigned long cycleEndTime;
 
